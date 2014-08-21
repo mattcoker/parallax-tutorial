@@ -1,0 +1,9 @@
+name = Parallax Tutorial
+description = A Poetic Systems tutorial for learning Drupal 7 module development.
+core = 7.x
+
+package = Tutorials
+
+dependencies[] = block
+dependencies[] = file
+dependencies[] = jquery_update
