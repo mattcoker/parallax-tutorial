@@ -1,0 +1,57 @@
+<?php
+
+// /**
+//  * @file
+//  * Install, update and uninstall functions for the block_class module.
+//  */
+
+/**
+ * Implements hook_install().
+ */
+function parallax_tutorial_install() {
+  $schema['block'] = array();
+  parallax_tutorial_schema_alter($schema);
+  foreach($schema['block']['fields'] as $field => $spec) {
+    if (db_field_exists('block', $field)) {
+      watchdog('system', 'Module install: Attempt to recreate field: "%field", when it already exists.', array('%field' => $field), WATCHDOG_WARNING);
+    }
+    else {
+      db_add_field('block', $field, $spec);
+    }
+  }
+}
+
+/**
+ * Implements hook_uninstall().
+ */
+function parallax_tutorial_uninstall() {
+  $schema['block'] = array();
+  parallax_tutorial_schema_alter($schema);
+  foreach($schema['block']['fields'] as $field => $specs) {
+    db_drop_field('block', $field);
+  }
+}
+
+/**
+ * Implements hook_schema_alter().
+ *
+ * Other modules, such as i18n_block also modify the block database table.
+ */
+function parallax_tutorial_schema_alter(&$schema) {
+  if (isset($schema['block'])) {
+    $schema['block']['fields']['parallax_value'] = array(
+      'type' => 'varchar',
+      'length' => 255,
+      'not null' => TRUE,
+      'default' => 'none',
+      'description' => 'String containing the parallax value for the block',
+    );
+    $schema['block']['fields']['background_image'] = array(
+      'type' => 'varchar',
+      'length' => 255,
+      'not null' => TRUE,
+      'default' => 'none',
+      'description' => 'String containing the background image name for the block',
+    );
+  }
+}
