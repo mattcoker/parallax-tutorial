@@ -11,6 +11,35 @@
  */
 
 /**
+ * Implements template_preprocess_block().
+ */
+function parallax_tutorial_preprocess_block(&$vars) {
+  $block = $vars['block'];
+  if ($block->parallax_value != "none") {
+
+    $final_path = '';
+    if (isset(file_load($block->background_image)->uri)) {
+      $image_path  = file_load($block->background_image)->uri;
+      $final_path = file_create_url($image_path);
+    }
+
+    $vars['attributes_array'] = array(
+      'data-parallax'         => $block->parallax_value,
+      'data-background-image' => $final_path,
+    );
+  }
+}
+
+/**
+ * Implements hook_block_view_alter().
+ */
+function parallax_tutorial_block_view_alter(&$data, $block) {
+  if ($block->parallax_value != 'none') {
+    drupal_add_js(drupal_get_path('module', 'parallax_tutorial') . '/parallax-tutorial.js');
+  }
+}
+
+/**
  * Implements hook_form_alter().
  */
 function parallax_tutorial_form_alter(&$form, &$form_state, $form_id) {
