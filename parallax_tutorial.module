@@ -50,3 +50,50 @@ function parallax_tutorial_form_alter(&$form, &$form_state, $form_id) {
     $form['#submit'][] = 'parallax_tutorial_form_submit';
   }
 }
+
+/**
+ * Helper function: additional submit callback for block configuration pages.
+ */
+function parallax_tutorial_form_submit($form, &$form_state) {
+  $curr_theme = $GLOBALS['conf']['theme_default'];
+
+  if ($form_state['values']['form_id'] == 'block_admin_configure' || $form_state['values']['form_id'] == 'block_add_block_form') {
+
+    $parallax_items = array(
+      'parallax_value'   => $form_state['values']['parallax_value'],
+      'background_image'          => $form_state['values']['background_image'],
+    );
+
+    if (parallax_block_updated_values($parallax_items, $form, $form_state)) {
+      db_update('block')
+        ->fields($parallax_items)
+        ->condition('module', $form_state['values']['module'])
+        ->condition('delta', $form_state['values']['delta'])
+        ->condition('theme', $curr_theme)
+        ->execute();
+
+      if (module_exists('context')) {
+        cache_clear_all('context', 'cache', TRUE);
+      }
+    }
+
+    $image = file_load($form_values['background_image']);
+    $image->status = FILE_STATUS_PERMANENT;
+    file_save($image);
+    file_usage_add($image, 'parallax_block', 'block', $form_values['delta']);
+  }
+}
+
+/**
+ * Function tests if any of the values are modified from the original value.
+ */
+function parallax_tutorial_updated_values($items, $form, $form_state) {
+  foreach ($items as $key => $value) {
+    if (isset($form_state['values'][$key])
+        && ($form['settings']['parallax'][$key]['#default_value'] != $form_state['values'][$key])
+        && user_access('administer blocks')) {
+      return TRUE;
+    }
+  }
+  return FALSE;
+}
